@@ -1,7 +1,7 @@
-export default {
+module.exports = {
+  darkMode: 'class', // Ushbu qatorni qo'shing
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {},

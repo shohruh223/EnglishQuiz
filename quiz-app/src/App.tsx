@@ -33,27 +33,27 @@ const apiKey = "";
 
 /* --- MOCK DATA --- */
 const MOCK_SECTIONS = [
-  { id: '1', name: 'Destination B1', description: 'Grammar & Vocabulary (B1 Level)', order: 1, questionCount: 2 },
-  { id: '2', name: 'Oxford Word Skills', description: 'Vocabulary Learning (Elementary - Intermediate)', order: 2, questionCount: 1 },
+  { id: '1', name: 'Essential Words 1', description: 'Ingliz tili asosiy so\'z boyligi (A1-A2)', order: 1, questionCount: 2 },
+  { id: '2', name: 'Oxford Word Skills', description: 'Academic Vocabulary (B1-B2)', order: 2, questionCount: 1 },
 ];
 
 // Darslar ro'yxatini oldindan belgilab qo'yamiz (har bir bo'lim uchun)
-const PREDEFINED_LESSONS: Record<string, string[]> = {
-  '1': Array.from({length: 14}, (_, i) => `Unit ${i + 1}`), // Destination B1 uchun 14 ta Unit
-  '2': Array.from({length: 10}, (_, i) => `Unit ${i + 1}`), // Oxford Word Skills uchun 10 ta Unit
+const PREDEFINED_LESSONS = {
+  '1': Array.from({length: 14}, (_, i) => `Unit ${i + 1}`),
+  '2': Array.from({length: 10}, (_, i) => `Unit ${i + 1}`),
 };
 
 const MOCK_QUESTIONS = [
   {
     id: '101',
     section_id: '1',
-    topic: 'Unit 1', // Topic endi Unit nomi sifatida ishlatiladi
-    question: 'I _______ (live) in Tashkent, but this week I _______ (stay) with my aunt.',
-    choices: ['live / am staying', 'am living / stay', 'live / stay', 'am living / am staying'],
-    correct_index: 0,
-    explanation: 'Doimiy holatlar uchun Present Simple (live), vaqtincha holatlar uchun Present Continuous (am staying) ishlatiladi.',
+    topic: 'Unit 1',
+    question: 'Ambitious', // Inglizcha so'z
+    choices: ['Mehnatsevar', 'Oliyjanob', 'Maqsad sari intiluvchan', 'Dangasa'], // O'zbekcha variantlar
+    correct_index: 2,
+    explanation: 'Ambitious - katta maqsadlari bor, o\'ziga ishongan inson (Maqsad sari intiluvchan).',
     difficulty: 'medium',
-    tags: ['grammar', 'tenses'],
+    tags: ['vocabulary', 'adjectives'],
     status: 'published',
     created_at: new Date().toISOString()
   },
@@ -61,12 +61,12 @@ const MOCK_QUESTIONS = [
     id: '102',
     section_id: '1',
     topic: 'Unit 2',
-    question: 'We need to _______ our flight before it gets too expensive.',
-    choices: ['catch', 'book', 'miss', 'take'],
-    correct_index: 1,
-    explanation: '"Book a flight" - chiptani band qilmoq yoki sotib olmoq degani.',
+    question: 'Qaror qilmoq', // O'zbekcha so'z
+    choices: ['To decide', 'To make', 'To do', 'To wonder'], // Inglizcha variantlar
+    correct_index: 0,
+    explanation: '"Qaror qilmoq" ingliz tilida "To decide" bo\'ladi.',
     difficulty: 'easy',
-    tags: ['vocabulary', 'travel'],
+    tags: ['vocabulary', 'verbs'],
     status: 'published',
     created_at: new Date().toISOString()
   },
@@ -74,10 +74,10 @@ const MOCK_QUESTIONS = [
     id: '201',
     section_id: '2',
     topic: 'Unit 1',
-    question: 'Which word describes the meal you eat in the morning?',
-    choices: ['Dinner', 'Lunch', 'Breakfast', 'Supper'],
-    correct_index: 2,
-    explanation: 'Ertalabki nonushta ingliz tilida "Breakfast" deyiladi.',
+    question: 'Delicious',
+    choices: ['Xunuk', 'Mazali', 'Sho\'r', 'Achchiq'],
+    correct_index: 1,
+    explanation: 'Delicious - juda mazali degan ma\'noni anglatadi.',
     difficulty: 'easy',
     tags: ['vocabulary', 'food'],
     status: 'published',
@@ -87,7 +87,7 @@ const MOCK_QUESTIONS = [
 
 /* --- UI COMPONENTS --- */
 
-const Button = ({ children, onClick, variant = 'primary', size = 'md', className = '', disabled = false, icon: Icon, loading = false }: any) => {
+const Button = ({ children, onClick, variant = 'primary', size = 'md', className = '', disabled = false, icon: Icon, loading = false }) => {
   const base = "inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
 
   const variants = {
@@ -112,13 +112,13 @@ const Button = ({ children, onClick, variant = 'primary', size = 'md', className
   );
 };
 
-const Card = ({ children, className = '' }: any) => (
+const Card = ({ children, className = '' }) => (
   <div className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 ${className}`}>
     {children}
   </div>
 );
 
-const Badge = ({ children, color = 'blue', className='' }: any) => {
+const Badge = ({ children, color = 'blue', className='' }) => {
   const colors = {
     blue: "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
     green: "bg-green-50 text-green-700 border-green-100 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
@@ -135,7 +135,7 @@ const Badge = ({ children, color = 'blue', className='' }: any) => {
 
 /* --- SHARED COMPONENTS --- */
 
-function ConfirmModal({ isOpen, onClose, onConfirm, title, message }: any) {
+function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -157,32 +157,49 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message }: any) {
 /* --- MAIN APP --- */
 
 export default function App() {
-  const [view, setView] = useState<'home' | 'lessons' | 'quiz' | 'admin' | 'login'>('home');
+  const [view, setView] = useState('home');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+
+  // Theme Toggle State with Persistence (localStorage)
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        return savedTheme === 'dark';
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
 
   // Data State
   const [sections, setSections] = useState(MOCK_SECTIONS);
   const [questions, setQuestions] = useState(MOCK_QUESTIONS);
 
   // Quiz State
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [activeQuiz, setActiveQuiz] = useState<any>(null);
+  const [activeSectionId, setActiveSectionId] = useState(null);
+  const [activeQuiz, setActiveQuiz] = useState(null);
 
-  // Theme Toggle
+  // Theme Toggle Effect
   useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    const root = document.documentElement;
+    if (darkMode) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   }, [darkMode]);
 
   // Bo'lim ichiga kirish (Darslarni ko'rish)
-  const openSection = (sectionId: string) => {
+  const openSection = (sectionId) => {
     setActiveSectionId(sectionId);
     setView('lessons');
   };
 
   // Aniq bir Unit/Lesson bo'yicha testni boshlash
-  const startQuiz = (lessonName: string) => {
+  const startQuiz = (lessonName) => {
     if (!activeSectionId) return;
 
     // Filter by Section ID AND Topic (Lesson Name)
@@ -193,7 +210,7 @@ export default function App() {
     );
 
     if (sectionQuestions.length === 0) {
-        alert("Bu dars uchun hali savollar mavjud emas.");
+        alert("Bu dars uchun hali so'zlar mavjud emas.");
         return;
     }
 
@@ -209,7 +226,7 @@ export default function App() {
     setView('quiz');
   };
 
-  const handleAdminLogin = (email: string) => {
+  const handleAdminLogin = (email) => {
     if (email === 'admin@quiz.uz') {
       setIsAdmin(true);
       setView('admin');
@@ -265,7 +282,7 @@ export default function App() {
             <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <Check className="text-white w-5 h-5" strokeWidth={3} />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">Quiz<span className="text-indigo-600 dark:text-indigo-400">Master</span></h1>
+            <h1 className="text-xl font-bold tracking-tight">Vocab<span className="text-indigo-600 dark:text-indigo-400">Master</span></h1>
           </div>
           <div className="flex items-center space-x-3">
             <button
@@ -282,12 +299,12 @@ export default function App() {
 
       <main className="max-w-5xl mx-auto px-4 py-12">
         <div className="text-center mb-16 space-y-4">
-          <Badge className="mb-2" color="blue">Bilimni Sinash</Badge>
+          <Badge className="mb-2" color="blue">So'z boyligini oshirish</Badge>
           <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            O'z bilimingizni <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">sinab ko'ring</span>
+            Ingliz tili so'zlarini <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">yod oling</span>
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Quyidagi kitoblardan birini tanlang va darslar bo'yicha testlarni yeching.
+            Quyidagi to'plamlardan birini tanlang va so'zlarni tarjimasi bilan topish bo'yicha mashq qiling.
           </p>
         </div>
 
@@ -303,7 +320,7 @@ export default function App() {
                     <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300">
                       <BookOpen size={28} strokeWidth={1.5} />
                     </div>
-                    <Badge color="gray">{qCount} Savol</Badge>
+                    <Badge color="gray">{qCount} So'z</Badge>
                   </div>
                   <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-600 transition-colors">{section.name}</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 line-clamp-2">
@@ -314,7 +331,7 @@ export default function App() {
                         className="w-full"
                         onClick={() => openSection(section.id)}
                     >
-                        Kirish <ChevronRight size={16} className="ml-2" />
+                        Boshlash <ChevronRight size={16} className="ml-2" />
                     </Button>
                   </div>
                 </div>
@@ -329,18 +346,15 @@ export default function App() {
 
 /* --- LESSONS VIEW (NEW COMPONENT) --- */
 
-function LessonsView({ sectionId, sections, questions, onBack, onStartLesson }: any) {
-    const section = sections.find((s:any) => s.id === sectionId);
-    // Agar bu bo'lim uchun oldindan belgilangan darslar bo'lsa o'shalarni olamiz,
-    // aks holda savollardan "topic" larni yig'ib olamiz.
+function LessonsView({ sectionId, sections, questions, onBack, onStartLesson }) {
+    const section = sections.find(s => s.id === sectionId);
     let lessonList = PREDEFINED_LESSONS[sectionId] || [];
 
-    // Agar PREDEFINED bo'lmasa, mavjud savollardan topiclarni olamiz
     if (lessonList.length === 0) {
         const uniqueTopics = Array.from(new Set(questions
-            .filter((q:any) => q.section_id === sectionId)
-            .map((q:any) => q.topic)
-        )) as string[];
+            .filter(q => q.section_id === sectionId)
+            .map(q => q.topic)
+        ));
         lessonList = uniqueTopics.sort();
     }
 
@@ -358,8 +372,7 @@ function LessonsView({ sectionId, sections, questions, onBack, onStartLesson }: 
             <main className="max-w-5xl mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {lessonList.map((lessonName, idx) => {
-                        // Ushbu lesson uchun savollar sonini hisoblash
-                        const qCount = questions.filter((q:any) => q.section_id === sectionId && q.topic === lessonName && q.status === 'published').length;
+                        const qCount = questions.filter(q => q.section_id === sectionId && q.topic === lessonName && q.status === 'published').length;
 
                         return (
                             <button
@@ -378,7 +391,7 @@ function LessonsView({ sectionId, sections, questions, onBack, onStartLesson }: 
                                 </div>
                                 <div className="z-10 flex items-center justify-between mt-2">
                                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${qCount > 0 ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-800'}`}>
-                                        {qCount} Savol
+                                        {qCount} So'z
                                     </span>
                                     {qCount > 0 && <Play size={20} className="text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0" fill="currentColor" />}
                                 </div>
@@ -399,7 +412,7 @@ function LessonsView({ sectionId, sections, questions, onBack, onStartLesson }: 
 }
 
 /* --- LOGIN VIEW --- */
-function LoginView({ onLogin, onCancel }: any) {
+function LoginView({ onLogin, onCancel }) {
   const [email, setEmail] = useState('admin@quiz.uz');
   const [password, setPassword] = useState('demo123');
 
@@ -441,7 +454,7 @@ function LoginView({ onLogin, onCancel }: any) {
 }
 
 /* --- QUIZ GAME VIEW --- */
-function QuizView({ quiz, setQuiz, onExit }: any) {
+function QuizView({ quiz, setQuiz, onExit }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const currentQ = quiz.questions[quiz.currentIndex];
   const isLast = quiz.currentIndex === quiz.questions.length - 1;
@@ -450,7 +463,7 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
   const isCorrect = hasAnswered && selectedIdx === currentQ.correct_index;
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
+    const handleKey = (e) => {
       if (hasAnswered) {
         if (e.key === 'Enter') nextQuestion();
         return;
@@ -461,10 +474,10 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [hasAnswered, quiz.currentIndex]);
 
-  const handleAnswer = (idx: number) => {
+  const handleAnswer = (idx) => {
     if (hasAnswered) return;
     const correct = idx === currentQ.correct_index;
-    setQuiz((prev: any) => ({
+    setQuiz(prev => ({
       ...prev,
       score: correct ? prev.score + 1 : prev.score,
       answers: { ...prev.answers, [prev.currentIndex]: idx }
@@ -476,9 +489,9 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
     setIsAnimating(true);
     setTimeout(() => {
       if (isLast) {
-        setQuiz((prev: any) => ({ ...prev, isFinished: true }));
+        setQuiz(prev => ({ ...prev, isFinished: true }));
       } else {
-        setQuiz((prev: any) => ({ ...prev, currentIndex: prev.currentIndex + 1 }));
+        setQuiz(prev => ({ ...prev, currentIndex: prev.currentIndex + 1 }));
       }
       setIsAnimating(false);
     }, 200);
@@ -513,7 +526,7 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
             </div>
           </div>
           <div className="space-y-4 max-h-60 overflow-y-auto mb-8 pr-2 custom-scrollbar">
-            {quiz.questions.map((q: any, idx: number) => {
+            {quiz.questions.map((q, idx) => {
               const userAns = quiz.answers[idx];
               const isRight = userAns === q.correct_index;
               return (
@@ -547,7 +560,7 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
         <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={onExit} icon={ArrowLeft}>Chiqish</Button>
           <div className="flex flex-col items-center">
-             <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Savol</span>
+             <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">So'z</span>
              <span className="text-lg font-bold text-slate-900 dark:text-white">{quiz.currentIndex + 1} <span className="text-slate-400 text-sm font-normal">/ {quiz.questions.length}</span></span>
           </div>
           <div className="w-20 flex justify-end">
@@ -561,11 +574,12 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
         </div>
       </div>
       <div className={`flex-1 w-full max-w-3xl p-6 flex flex-col justify-center transition-opacity duration-200 ${isAnimating ? 'opacity-50' : 'opacity-100'}`}>
-        <div className="mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-tight">{currentQ.question}</h2>
+        <div className="mb-10 text-center">
+            <div className="text-slate-500 text-sm uppercase tracking-wider mb-2 font-medium">Tarjimasini toping</div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white leading-tight">{currentQ.question}</h2>
         </div>
-        <div className="grid grid-cols-1 gap-4 mb-8">
-          {currentQ.choices.map((choice: string, idx: number) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {currentQ.choices.map((choice, idx) => {
             const isSelected = selectedIdx === idx;
             const isCorrectChoice = idx === currentQ.correct_index;
             let cardClass = "hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer";
@@ -583,7 +597,7 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
                cardClass = "border-indigo-600 ring-1 ring-indigo-600 bg-indigo-50 dark:bg-indigo-900/20";
             }
             return (
-              <div key={idx} onClick={() => handleAnswer(idx)} className={`group relative p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 transition-all duration-200 flex items-center gap-4 ${cardClass}`}>
+              <div key={idx} onClick={() => handleAnswer(idx)} className={`group relative p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 transition-all duration-200 flex items-center gap-4 h-full ${cardClass}`}>
                 {indicator}
                 <span className={`text-lg font-medium ${hasAnswered && isCorrectChoice ? 'text-green-800 dark:text-green-200' : 'text-slate-700 dark:text-slate-200'}`}>{choice}</span>
               </div>
@@ -602,7 +616,7 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
           </div>
           <div className="flex justify-end">
              <Button onClick={nextQuestion} size="lg" className="w-full md:w-auto text-lg px-8 py-4">
-               {isLast ? 'Natijalarni ko\'rish' : 'Keyingi savol'} <ChevronRight className="ml-2" />
+               {isLast ? 'Natijalarni ko\'rish' : 'Keyingi so\'z'} <ChevronRight className="ml-2" />
              </Button>
           </div>
         </div>
@@ -612,7 +626,7 @@ function QuizView({ quiz, setQuiz, onExit }: any) {
 }
 
 /* --- ADMIN DASHBOARD --- */
-function AdminDashboard({ sections, setSections, questions, setQuestions, onLogout }: any) {
+function AdminDashboard({ sections, setSections, questions, setQuestions, onLogout }) {
   const [activeTab, setActiveTab] = useState('questions');
 
   return (
@@ -647,7 +661,7 @@ function AdminDashboard({ sections, setSections, questions, setQuestions, onLogo
   );
 }
 
-const NavItem = ({ active, onClick, icon: Icon, label }: any) => (
+const NavItem = ({ active, onClick, icon: Icon, label }) => (
   <button onClick={onClick} className={`w-full flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`}>
     <Icon className="w-5 h-5 mr-3" />
     {label}
@@ -655,13 +669,13 @@ const NavItem = ({ active, onClick, icon: Icon, label }: any) => (
 );
 
 /* --- SECTIONS MANAGER --- */
-function SectionsManager({ sections, setSections }: any) {
+function SectionsManager({ sections, setSections }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState(null);
 
-  const handleEdit = (section: any) => {
+  const handleEdit = (section) => {
     setFormData({ name: section.name, description: section.description });
     setEditingId(section.id);
     setIsEditing(true);
@@ -670,7 +684,7 @@ function SectionsManager({ sections, setSections }: any) {
   const handleSave = () => {
     if (!formData.name) return;
     if (editingId) {
-      setSections(sections.map((s: any) => s.id === editingId ? { ...s, name: formData.name, description: formData.description } : s));
+      setSections(sections.map(s => s.id === editingId ? { ...s, name: formData.name, description: formData.description } : s));
     } else {
       const newSection = { id: Math.random().toString(36).substr(2, 9), name: formData.name, description: formData.description, order: sections.length + 1, questionCount: 0 };
       setSections([...sections, newSection]);
@@ -678,13 +692,13 @@ function SectionsManager({ sections, setSections }: any) {
     setIsEditing(false); setEditingId(null); setFormData({ name: '', description: '' });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id) => {
     setDeleteId(id);
   }
 
   const confirmDelete = () => {
     if (deleteId) {
-      setSections(sections.filter((s:any) => s.id !== deleteId));
+      setSections(sections.filter(s => s.id !== deleteId));
       setDeleteId(null);
     }
   }
@@ -717,7 +731,7 @@ function SectionsManager({ sections, setSections }: any) {
           <div className="grid gap-4 mb-6">
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nomi</label>
-              <input className="w-full mt-1 p-2.5 border rounded-lg dark:bg-slate-900 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Masalan: Fizika" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              <input className="w-full mt-1 p-2.5 border rounded-lg dark:bg-slate-900 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Masalan: Essential Vocabulary" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
             </div>
             <div>
                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tavsif</label>
@@ -731,7 +745,7 @@ function SectionsManager({ sections, setSections }: any) {
         </Card>
       )}
       <div className="grid gap-4">
-        {sections.map((s: any) => (
+        {sections.map(s => (
           <Card key={s.id} className="p-5 flex justify-between items-center group hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">{s.order}</div>
@@ -741,7 +755,7 @@ function SectionsManager({ sections, setSections }: any) {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Badge color="gray">{s.questionCount || 0} savol</Badge>
+              <Badge color="gray">{s.questionCount || 0} so'z</Badge>
               <Button variant="ghost" size="sm" icon={Edit3} onClick={() => handleEdit(s)} />
               <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50" icon={Trash2} onClick={() => handleDelete(s.id)} />
             </div>
@@ -754,32 +768,32 @@ function SectionsManager({ sections, setSections }: any) {
 
 /* --- QUESTIONS MANAGER & AI & EDIT --- */
 
-function QuestionsManager({ questions, setQuestions, sections }: any) {
+function QuestionsManager({ questions, setQuestions, sections }) {
   const [showAiModal, setShowAiModal] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<any>(null); // For edit modal
+  const [editingQuestion, setEditingQuestion] = useState(null); // For edit modal
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState(null);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id) => {
     setDeleteId(id);
   };
 
   const confirmDelete = () => {
     if (deleteId) {
-      setQuestions(questions.filter((q: any) => q.id !== deleteId));
+      setQuestions(questions.filter(q => q.id !== deleteId));
       setDeleteId(null);
     }
   };
 
-  const handlePublish = (id: string) => {
-    setQuestions(questions.map((q: any) => q.id === id ? { ...q, status: 'published' } : q));
+  const handlePublish = (id) => {
+    setQuestions(questions.map(q => q.id === id ? { ...q, status: 'published' } : q));
   }
 
-  const handleSaveQuestion = (question: any) => {
+  const handleSaveQuestion = (question) => {
     if (question.id) {
       // Update existing
-      setQuestions(questions.map((q: any) => q.id === question.id ? question : q));
+      setQuestions(questions.map(q => q.id === question.id ? question : q));
     } else {
       // Add new
       const newQ = { ...question, id: Math.random().toString(36).substr(2, 9), created_at: new Date().toISOString() };
@@ -788,7 +802,7 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
     setEditingQuestion(null);
   };
 
-  const filteredQuestions = questions.filter((q: any) => {
+  const filteredQuestions = questions.filter(q => {
     const matchesSection = filter === 'all' || q.section_id === filter;
     const matchesSearch = q.question.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSection && matchesSearch;
@@ -798,8 +812,8 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Savollar Bazasi</h1>
-          <p className="text-slate-500 mt-1">Savollarni boshqarish, tahrirlash va AI yordamida yaratish.</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Lug'at Bazasi</h1>
+          <p className="text-slate-500 mt-1">So'zlarni boshqarish, tahrirlash va AI yordamida yaratish.</p>
         </div>
         <div className="flex gap-2">
             <Button onClick={() => setEditingQuestion({
@@ -809,7 +823,7 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
               difficulty: 'medium',
               status: 'draft'
             })} icon={Plus}>
-              Yangi Savol
+              Yangi So'z
             </Button>
             <Button
               onClick={() => setShowAiModal(true)}
@@ -825,7 +839,7 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
-        title="Savolni o'chirish"
+        title="So'zni o'chirish"
         message="Haqiqatan ham bu savolni o'chirmoqchimisiz?"
       />
 
@@ -834,7 +848,7 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
-            placeholder="Savolni qidirish..."
+            placeholder="So'zni qidirish..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -844,7 +858,7 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
           onChange={(e) => setFilter(e.target.value)}
         >
           <option value="all">Barcha Bo'limlar</option>
-          {sections.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          {sections.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </div>
 
@@ -852,7 +866,7 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
         <AiGeneratorModal
           sections={sections}
           onClose={() => setShowAiModal(false)}
-          onGenerate={(newQuestions: any[]) => {
+          onGenerate={(newQuestions) => {
             setQuestions([...questions, ...newQuestions]);
             setShowAiModal(false);
           }}
@@ -872,7 +886,7 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
         <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
           <thead className="bg-slate-50 dark:bg-slate-900/50">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Savol</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">So'z / Tarjima</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mavzu / Bo'lim</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Qiyinlik</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Holat</th>
@@ -880,15 +894,15 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-            {filteredQuestions.map((q: any) => {
-              const sectionName = sections.find((s:any) => s.id === q.section_id)?.name || 'Noma\'lum';
+            {filteredQuestions.map(q => {
+              const sectionName = sections.find(s => s.id === q.section_id)?.name || 'Noma\'lum';
               return (
                 <tr key={q.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-slate-900 dark:text-white line-clamp-2 max-w-md" title={q.question}>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 max-w-md" title={q.question}>
                       {q.question}
                     </div>
-                    <div className="text-xs text-slate-400 mt-1">To'g'ri javob: {q.choices[q.correct_index]}</div>
+                    <div className="text-xs text-slate-400 mt-1">Javob: <span className="text-indigo-600 font-medium">{q.choices[q.correct_index]}</span></div>
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                     <div className="font-medium text-slate-900 dark:text-white">{sectionName}</div>
@@ -900,15 +914,15 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
                     </Badge>
                   </td>
                   <td className="px-6 py-4">
-                     {q.status === 'published' ? (
-                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                         <CheckCircle className="w-3 h-3 mr-1" /> E'lon qilingan
-                       </span>
-                     ) : (
-                       <button onClick={() => handlePublish(q.id)} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 cursor-pointer">
-                          Qoralama
-                       </button>
-                     )}
+                      {q.status === 'published' ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                          <CheckCircle className="w-3 h-3 mr-1" /> E'lon qilingan
+                        </span>
+                      ) : (
+                        <button onClick={() => handlePublish(q.id)} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 cursor-pointer">
+                           Qoralama
+                        </button>
+                      )}
                   </td>
                   <td className="px-6 py-4 text-right flex justify-end gap-2">
                     <Button variant="ghost" size="sm" icon={Edit3} onClick={() => setEditingQuestion(q)} />
@@ -924,8 +938,8 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
               <Search size={32} />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white">Savollar topilmadi</h3>
-            <p className="text-slate-500 mt-1">Qidiruv so'zini o'zgartiring yoki yangi savol qo'shing.</p>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white">So'zlar topilmadi</h3>
+            <p className="text-slate-500 mt-1">Qidiruv so'zini o'zgartiring yoki yangi so'z qo'shing.</p>
           </div>
         )}
       </div>
@@ -934,7 +948,7 @@ function QuestionsManager({ questions, setQuestions, sections }: any) {
 }
 
 /* --- QUESTION EDITOR MODAL --- */
-function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
+function QuestionEditorModal({ question, sections, onClose, onSave }) {
     const [formData, setFormData] = useState({
         ...question,
         topic: question.topic || '',
@@ -942,18 +956,18 @@ function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
         explanation: question.explanation || '',
     });
 
-    const handleChange = (field: string, value: any) => {
+    const handleChange = (field, value) => {
         setFormData({ ...formData, [field]: value });
     };
 
-    const handleChoiceChange = (index: number, value: string) => {
+    const handleChoiceChange = (index, value) => {
         const newChoices = [...formData.choices];
         newChoices[index] = value;
         setFormData({ ...formData, choices: newChoices });
     };
 
     const handleSubmit = () => {
-        if(!formData.question || formData.choices.some((c: string) => !c)) {
+        if(!formData.question || formData.choices.some(c => !c)) {
             return;
         }
         onSave(formData);
@@ -965,7 +979,7 @@ function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
                 <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
                     <X size={20} />
                 </button>
-                <h2 className="text-xl font-bold mb-6 dark:text-white">{question.id ? "Savolni Tahrirlash" : "Yangi Savol"}</h2>
+                <h2 className="text-xl font-bold mb-6 dark:text-white">{question.id ? "So'zni Tahrirlash" : "Yangi So'z"}</h2>
 
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -976,7 +990,7 @@ function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
                                 value={formData.section_id}
                                 onChange={(e) => handleChange('section_id', e.target.value)}
                             >
-                                {sections.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                {sections.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                             </select>
                         </div>
                         <div>
@@ -986,19 +1000,19 @@ function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-1">Savol Matni</label>
-                        <textarea
-                            className="w-full p-2 border rounded-lg dark:bg-slate-800 h-24"
+                        <label className="block text-sm font-semibold mb-1">Asosiy So'z (Inglizcha yoki O'zbekcha)</label>
+                        <input
+                            className="w-full p-2 border rounded-lg dark:bg-slate-800 text-lg font-medium"
                             value={formData.question}
                             onChange={(e) => handleChange('question', e.target.value)}
-                            placeholder="Savolni kiriting..."
+                            placeholder="Masalan: Beautiful"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Javob Variantlari (To'g'ri javobni belgilang)</label>
+                        <label className="block text-sm font-semibold mb-2">Tarjima Variantlari (To'g'risini belgilang)</label>
                         <div className="space-y-2">
-                            {formData.choices.map((choice: string, idx: number) => (
+                            {formData.choices.map((choice, idx) => (
                                 <div key={idx} className="flex items-center gap-2">
                                     <input
                                         type="radio"
@@ -1011,7 +1025,7 @@ function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
                                         className={`flex-1 p-2 border rounded-lg dark:bg-slate-800 ${formData.correct_index === idx ? 'border-green-500 ring-1 ring-green-500' : ''}`}
                                         value={choice}
                                         onChange={(e) => handleChoiceChange(idx, e.target.value)}
-                                        placeholder={`Javob ${['A','B','C','D'][idx]}`}
+                                        placeholder={`Variant ${['A','B','C','D'][idx]}`}
                                     />
                                 </div>
                             ))}
@@ -1019,17 +1033,17 @@ function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-1">Izoh (Explanation)</label>
+                        <label className="block text-sm font-semibold mb-1">Izoh (Qisqa tarjima)</label>
                         <textarea
                             className="w-full p-2 border rounded-lg dark:bg-slate-800 h-20"
                             value={formData.explanation}
                             onChange={(e) => handleChange('explanation', e.target.value)}
-                            placeholder="To'g'ri javobga izoh..."
+                            placeholder="So'zning ma'nosi va ishlatilishi..."
                         />
                     </div>
 
                     <div className="flex justify-between items-center pt-4">
-                         <div className="flex gap-4">
+                          <div className="flex gap-4">
                              <select className="p-2 border rounded-lg dark:bg-slate-800" value={formData.difficulty} onChange={(e) => handleChange('difficulty', e.target.value)}>
                                  <option value="easy">Oson</option>
                                  <option value="medium">O'rta</option>
@@ -1039,8 +1053,8 @@ function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
                                  <option value="draft">Qoralama</option>
                                  <option value="published">E'lon qilish</option>
                              </select>
-                         </div>
-                         <Button onClick={handleSubmit} icon={Save}>Saqlash</Button>
+                          </div>
+                          <Button onClick={handleSubmit} icon={Save}>Saqlash</Button>
                     </div>
                 </div>
             </Card>
@@ -1049,7 +1063,7 @@ function QuestionEditorModal({ question, sections, onClose, onSave }: any) {
 }
 
 /* --- IMPORT / EXPORT MANAGER --- */
-function ImportExportManager({ questions, setQuestions, sections }: any) {
+function ImportExportManager({ questions, setQuestions, sections }) {
   // Export states
   const [exportSectionId, setExportSectionId] = useState('all');
 
@@ -1057,8 +1071,8 @@ function ImportExportManager({ questions, setQuestions, sections }: any) {
   const [importSectionId, setImportSectionId] = useState(sections[0]?.id || '');
   const [importTopic, setImportTopic] = useState('');
 
-  const [notification, setNotification] = useState<{type: 'success'|'error', message: string} | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [notification, setNotification] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Bo'lim o'zgarganda darslar ro'yxatini yangilash (Import uchun)
   useEffect(() => {
@@ -1072,12 +1086,12 @@ function ImportExportManager({ questions, setQuestions, sections }: any) {
 
   const exportJson = () => {
     let dataToExport = questions;
-    let fileName = "barcha_savollar.json";
+    let fileName = "barcha_sozlar.json";
 
     if (exportSectionId !== 'all') {
-      dataToExport = questions.filter((q: any) => q.section_id === exportSectionId);
-      const sectionName = sections.find((s: any) => s.id === exportSectionId)?.name || 'bolim';
-      fileName = `${sectionName.replace(/\s+/g, '_').toLowerCase()}_savollari.json`;
+      dataToExport = questions.filter(q => q.section_id === exportSectionId);
+      const sectionName = sections.find(s => s.id === exportSectionId)?.name || 'bolim';
+      fileName = `${sectionName.replace(/\s+/g, '_').toLowerCase()}_sozlari.json`;
     }
 
     const dataStr = JSON.stringify(dataToExport, null, 2);
@@ -1089,7 +1103,7 @@ function ImportExportManager({ questions, setQuestions, sections }: any) {
     link.click();
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -1102,7 +1116,7 @@ function ImportExportManager({ questions, setQuestions, sections }: any) {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const result = event.target?.result as string;
+        const result = event.target?.result;
         const json = JSON.parse(result);
 
         if (Array.isArray(json)) {
@@ -1119,12 +1133,12 @@ function ImportExportManager({ questions, setQuestions, sections }: any) {
                  created_at: new Date().toISOString()
              }));
 
-             setQuestions((prev: any) => [...prev, ...newQuestions]);
+             setQuestions(prev => [...prev, ...newQuestions]);
 
-             const sectionName = sections.find((s:any) => s.id === importSectionId)?.name;
+             const sectionName = sections.find(s => s.id === importSectionId)?.name;
              setNotification({
                  type: 'success',
-                 message: `Muvaffaqiyatli! ${json.length} ta savol "${sectionName}"ning "${importTopic}" darsiga qo'shildi.`
+                 message: `Muvaffaqiyatli! ${json.length} ta so'z "${sectionName}"ning "${importTopic}" darsiga qo'shildi.`
              });
           } else {
              setNotification({ type: 'error', message: "Xatolik: JSON formatida kerakli maydonlar (question, choices...) yetishmayapti." });
@@ -1168,7 +1182,7 @@ function ImportExportManager({ questions, setQuestions, sections }: any) {
                         value={importSectionId}
                         onChange={(e) => setImportSectionId(e.target.value)}
                       >
-                        {sections.map((s: any) => (
+                        {sections.map(s => (
                             <option key={s.id} value={s.id}>{s.name}</option>
                         ))}
                       </select>
@@ -1216,8 +1230,8 @@ function ImportExportManager({ questions, setQuestions, sections }: any) {
                     value={exportSectionId}
                     onChange={(e) => setExportSectionId(e.target.value)}
                 >
-                    <option value="all">Barcha savollar (To'liq baza)</option>
-                    {sections.map((s: any) => (
+                    <option value="all">Barcha so'zlar (To'liq baza)</option>
+                    {sections.map(s => (
                         <option key={s.id} value={s.id}>{s.name} bo'limi</option>
                     ))}
                 </select>
@@ -1236,7 +1250,7 @@ function ImportExportManager({ questions, setQuestions, sections }: any) {
 
 /* --- AI GENERATOR MODAL (Serverless Pattern) --- */
 
-function AiGeneratorModal({ sections, onClose, onGenerate }: any) {
+function AiGeneratorModal({ sections, onClose, onGenerate }) {
   const [topic, setTopic] = useState('');
   const [sectionId, setSectionId] = useState(sections[0]?.id || '');
   const [difficulty, setDifficulty] = useState('medium');
@@ -1250,29 +1264,32 @@ function AiGeneratorModal({ sections, onClose, onGenerate }: any) {
     setError('');
 
     try {
-      // PROMPT ENGINEERING FOR GEMINI (STRICT JSON)
+      // PROMPT ENGINEERING FOR VOCABULARY MATCHING
       const prompt = `
-        You are a Quiz Question Generator for an Uzbek language learning app.
-        Language: Uzbek.
-        Task: Generate ${count} multiple-choice questions about "${topic}".
+        You are a Vocabulary Quiz Generator for English-Uzbek learning.
+        Task: Generate ${count} vocabulary matching questions about "${topic}".
         Difficulty: ${difficulty}.
+
+        CRITICAL REQUIREMENT:
+        - 50% of questions should be: English Word -> 4 Uzbek Options (Translation)
+        - 50% of questions should be: Uzbek Word -> 4 English Options (Translation)
 
         RULES:
         1. Output MUST be valid JSON array inside a "questions" key.
-        2. NO markdown formatting (no \`\`\`json).
+        2. NO markdown formatting.
         3. Each question must have exactly 4 choices.
         4. "correct_index" must be 0, 1, 2, or 3.
-        5. "explanation" (Izoh) must be in Uzbek, short and helpful.
+        5. "explanation" (Izoh) must be in Uzbek, explaining the translation clearly.
 
         SCHEMA:
         {
           "questions": [
             {
-              "question": "Savol matni",
-              "choices": ["Javob A", "Javob B", "Javob C", "Javob D"],
+              "question": "English or Uzbek word",
+              "choices": ["Option 1", "Option 2", "Option 3", "Option 4"],
               "correct_index": 0,
-              "explanation": "Nima uchun bu javob to'g'ri ekanligi haqida qisqa izoh",
-              "tags": ["tag1", "tag2"]
+              "explanation": "Qisqa izoh",
+              "tags": ["tag1"]
             }
           ]
         }
@@ -1297,10 +1314,10 @@ function AiGeneratorModal({ sections, onClose, onGenerate }: any) {
       if (!parsed.questions || !Array.isArray(parsed.questions)) throw new Error("JSON formati noto'g'ri");
 
       // Transform to App Data Structure
-      const newQuestions = parsed.questions.map((q: any) => ({
+      const newQuestions = parsed.questions.map(q => ({
         id: Math.random().toString(36).substr(2, 9),
         section_id: sectionId,
-        topic: topic, // Bu yerda topic masalan "Unit 1" bo'lishi mumkin
+        topic: topic,
         question: q.question,
         choices: q.choices,
         correct_index: q.correct_index,
@@ -1314,7 +1331,7 @@ function AiGeneratorModal({ sections, onClose, onGenerate }: any) {
 
       onGenerate(newQuestions);
 
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       setError("Xatolik yuz berdi: " + err.message);
     } finally {
@@ -1334,8 +1351,8 @@ function AiGeneratorModal({ sections, onClose, onGenerate }: any) {
             <BrainCircuit size={24} />
           </div>
           <div>
-            <h2 className="text-xl font-bold dark:text-white">AI Savol Generatori</h2>
-            <p className="text-xs text-slate-500">Gemini sun'iy intellekti yordamida</p>
+            <h2 className="text-xl font-bold dark:text-white">AI Lug'at Generatori</h2>
+            <p className="text-xs text-slate-500">So'zlar bazasini AI yordamida to'ldiring</p>
           </div>
         </div>
 
@@ -1344,7 +1361,7 @@ function AiGeneratorModal({ sections, onClose, onGenerate }: any) {
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Mavzu / Dars nomi</label>
             <input
               className="w-full p-2.5 border rounded-xl dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="Masalan: Unit 5"
+              placeholder="Masalan: Fruits, Business, Travel..."
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
             />
@@ -1358,7 +1375,7 @@ function AiGeneratorModal({ sections, onClose, onGenerate }: any) {
                 value={sectionId}
                 onChange={(e) => setSectionId(e.target.value)}
               >
-                {sections.map((s:any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                {sections.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
             <div>
