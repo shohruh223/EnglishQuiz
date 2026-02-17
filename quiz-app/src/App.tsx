@@ -74,7 +74,7 @@ type Notification = { type: "success" | "error"; message: string };
 const MOCK_SECTIONS: Section[] = [
   {
     id: "1",
-    name: "Essential Words 1",
+    name: "Destination B1",
     description: "Ingliz tili asosiy so'z boyligi (A1-A2)",
     order: 1,
     questionCount: 2,
